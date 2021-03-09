@@ -98,6 +98,23 @@ class StateBonus(gym.core.Wrapper):
     def reset(self, **kwargs):
         return self.env.reset(**kwargs)
 
+class ConstantReward(gym.core.Wrapper):
+    """
+    Always give +1 reward for success, as opposed to default, which is
+    reward = 1 - 0.9 * (steps / max_steps)
+    """
+    def __init__(self, env):
+        super().__init__(env)
+
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action)
+        if reward > 0:
+            reward = 1.0
+        return obs, reward, done, info
+
+    def reset(self, **kwargs):
+        return self.env.reset(**kwargs)
+
 class ImgObsWrapper(gym.core.ObservationWrapper):
     """
     Use the image as the only observation output, no language/mission.
