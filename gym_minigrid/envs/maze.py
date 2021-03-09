@@ -34,7 +34,7 @@ class MazeEnv(MiniGridEnv):
             self.grid.set(x, y, None)
             visited[x, y] = True
             moves = [(x - 2, y), (x + 2, y), (x, y - 2), (x, y + 2)]
-            moves = np.random.permutation(moves)
+            moves = self.np_random.permutation(moves)
             for tx, ty in moves:
                 if 0 <= tx < width and 0 <= ty < height and not visited[tx, ty]:
                     self.grid.set((x + tx) // 2, (y + ty) // 2, None)  # set intermediate "corridor"
