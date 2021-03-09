@@ -152,6 +152,95 @@ class OneHotPartialObsWrapper(gym.core.ObservationWrapper):
             'image': out
         }
 
+class CategoricalObsWrapper(gym.core.ObservationWrapper):
+    """
+    Wrapper to get a [7, 7, 1] observation image with a single categorical variable per cell.
+    """
+
+    POSSIBLE_OBJECTS = {
+        'basic': np.array([
+            [0, 0, 0],  # Hidden
+            [1, 0, 0],  # Empty
+            [2, 5, 0],  # Wall
+            [8, 1, 0],  # Goal
+        ]),
+        'door': np.array([
+            [4, 0, 0],  # Door(color, state)
+            [4, 0, 1],
+            [4, 1, 0],
+            [4, 1, 1],
+            [4, 2, 0],
+            [4, 2, 1],
+            [4, 3, 0],
+            [4, 3, 1],
+            [4, 4, 0],
+            [4, 4, 1],
+            [4, 5, 0],
+            [4, 5, 1],
+        ]),
+        'key': np.array([
+            [5, 0, 0],  # Key(color)
+            [5, 1, 0],
+            [5, 2, 0],
+            [5, 3, 0],
+            [5, 4, 0],
+            [5, 5, 0],
+        ]),
+        'ball': np.array([
+            [6, 0, 0],  # Ball(color)
+            [6, 1, 0],
+            [6, 2, 0],
+            [6, 3, 0],
+            [6, 4, 0],
+            [6, 5, 0],
+        ]),
+        'box': np.array([
+            [7, 0, 0],  # Box (color)
+            [7, 1, 0],
+            [7, 2, 0],
+            [7, 3, 0],
+            [7, 4, 0],
+            [7, 5, 0],
+        ]),
+        'lava': np.array([
+            [9, 0, 0],  # Lava
+        ]),
+        # Not used: Floor => [3, *, 0]
+    }
+
+    def __init__(self, env, restrict_types=None):
+        super().__init__(env)
+        if not restrict_types:
+            restrict_types = list(CategoricalObsWrapper.POSSIBLE_OBJECTS.keys())
+        self.possible_objects = np.concatenate(
+            [CategoricalObsWrapper.POSSIBLE_OBJECTS[key]
+                for key in restrict_types]
+        )
+        self.n_categories = len(self.possible_objects)
+        obs_shape = env.observation_space['image'].shape
+        self.observation_space.spaces["image"] = spaces.Box(
+            low=0,
+            high=self.n_categories - 1,
+            shape=(obs_shape[0], obs_shape[1], 1),
+            dtype='uint8'
+        )
+
+    def observation(self, obs):
+        img = obs.pop('image')
+
+        # Make one-hot
+        n = self.n_categories
+        out = np.zeros(img.shape[:-1] + (n,), dtype=bool)  # (7, 7, 35)
+        for i in range(n):
+            val = self.possible_objects[i]
+            out[..., i] = (img == val).all(axis=-1)
+
+        # One-hot to categorical
+        out = out.argmax(axis=-1).astype(np.uint8)  # (7, 7, 33) => (7, 7)
+        out = np.expand_dims(out, -1)               # (7, 7) => (7, 7, 1)
+
+        return dict(image=out, **obs)
+
 class RGBImgObsWrapper(gym.core.ObservationWrapper):
     """
     Wrapper to use fully observable RGB image as the only observation output,
