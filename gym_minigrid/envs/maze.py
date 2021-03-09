@@ -11,13 +11,15 @@ class MazeEnv(MiniGridEnv):
                  size=11,
                  agent_start_pos=(1, 1),
                  agent_start_dir=0,
-                 goal_pos=(-2, -2),
+                 goal_pos=None,
                  max_steps=1000
                  ):
         assert size % 2 == 1, "Size should be odd"
         self._agent_start_pos = agent_start_pos
         self._agent_start_dir = agent_start_dir
-        self._goal_pos = goal_pos if goal_pos[0] >= 0 else (goal_pos[0] + size, goal_pos[1] + size)
+        if goal_pos is not None and goal_pos[0] < 0:
+            goal_pos = (goal_pos[0] + size, goal_pos[1] + size)  # Negative means from bottom-right corner
+        self._goal_pos = goal_pos
         super().__init__(grid_size=size, max_steps=max_steps)
 
     def _gen_grid(self, width, height):
@@ -43,7 +45,11 @@ class MazeEnv(MiniGridEnv):
         _gen_maze_dfs(*self._agent_start_pos)
         self.agent_pos = self._agent_start_pos
         self.agent_dir = self._agent_start_dir
-        self.put_obj(Goal(), *self._goal_pos)
+
+        if self._goal_pos:
+            self.put_obj(Goal(), *self._goal_pos)
+        else:
+            self.place_obj(Goal())
 
         self.mission = "get to the green goal square"
 
