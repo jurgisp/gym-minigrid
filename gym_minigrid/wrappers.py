@@ -208,7 +208,7 @@ class CategoricalObsWrapper(gym.core.ObservationWrapper):
         # Not used: Floor => [3, *, 0]
     }
 
-    def __init__(self, env, restrict_types=None):
+    def __init__(self, env, no_mission=False, restrict_types=None):
         super().__init__(env)
         if not restrict_types:
             restrict_types = list(CategoricalObsWrapper.POSSIBLE_OBJECTS.keys())
@@ -224,9 +224,12 @@ class CategoricalObsWrapper(gym.core.ObservationWrapper):
             shape=(obs_shape[0], obs_shape[1], 1),
             dtype='uint8'
         )
+        self.no_mission = no_mission
 
     def observation(self, obs):
         img = obs.pop('image')
+        if self.no_mission and 'mission' in obs:
+            del obs['mission']
 
         # Make one-hot
         n = self.n_categories
