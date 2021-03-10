@@ -222,6 +222,12 @@ class CategoricalObsWrapper(gym.core.ObservationWrapper):
         'lava': np.array([
             [9, 0, 0],  # Lava
         ]),
+        'agent': np.array([
+            [10, 0, 0],  # Agent(direction)
+            [10, 0, 1],
+            [10, 0, 2],
+            [10, 0, 3],
+        ]),
         # Not used: Floor => [3, *, 0]
     }
 
