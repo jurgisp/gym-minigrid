@@ -55,6 +55,7 @@ class MazeEnv(MiniGridEnv):
 
 
 register(id='MiniGrid-Maze-v0', entry_point='gym_minigrid.envs:MazeEnv')
+register(id='MiniGrid-MazeS7-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=7))
 register(id='MiniGrid-MazeS11-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=11))
 register(id='MiniGrid-MazeS15-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=15))
 register(id='MiniGrid-MazeS19-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=19))
