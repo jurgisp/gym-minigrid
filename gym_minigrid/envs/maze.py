@@ -14,6 +14,7 @@ class MazeEnv(MiniGridEnv):
                  goal_pos=None,
                  max_steps=1000,
                  respawn_goal=False,
+                 no_goal=False,
                  ):
         assert size % 2 == 1, "Size should be odd"
         self._agent_start_pos = agent_start_pos
@@ -22,6 +23,7 @@ class MazeEnv(MiniGridEnv):
             goal_pos = (goal_pos[0] + size, goal_pos[1] + size)  # Negative means from bottom-right corner
         self._goal_pos = goal_pos
         self._respawn_goal = respawn_goal
+        self._no_goal = no_goal
         super().__init__(grid_size=size, max_steps=max_steps)
 
     def _gen_grid(self, width, height):
@@ -58,16 +60,20 @@ class MazeEnv(MiniGridEnv):
     def step(self, action):
         obs, reward, done, info = MiniGridEnv.step(self, action)
 
-        if self._respawn_goal:
-            cell = self.grid.get(*self.agent_pos)
-            if cell != None and cell.type == 'goal':
-                assert done and reward > 0
-                # Revert done and move goal
+        cell = self.grid.get(*self.agent_pos)
+        if cell != None and cell.type == 'goal':
+            # Reched goal
+            if self._respawn_goal:
+                # Give reward and respawn goal
                 done = False
                 reward = 1.0
                 self.grid.set(*self.agent_pos, None)
                 self.place_obj(Goal())
                 obs = self.gen_obs()
+            elif self._no_goal:
+                # Don't give reward or stop on goal
+                done = False
+                reward = 0.0
 
         return obs, reward, done, info
 
@@ -83,3 +89,8 @@ register(id='MiniGrid-MazeS7R-v0', entry_point='gym_minigrid.envs:MazeEnv', kwar
 register(id='MiniGrid-MazeS11R-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=11, respawn_goal=True))
 register(id='MiniGrid-MazeS15R-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=15, respawn_goal=True))
 register(id='MiniGrid-MazeS19R-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=19, respawn_goal=True))
+
+register(id='MiniGrid-MazeS7N-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=7, no_goal=True))
+register(id='MiniGrid-MazeS11N-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=11, no_goal=True))
+register(id='MiniGrid-MazeS15N-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=15, no_goal=True))
+register(id='MiniGrid-MazeS19N-v0', entry_point='gym_minigrid.envs:MazeEnv', kwargs=dict(size=19, no_goal=True))
