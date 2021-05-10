@@ -60,20 +60,21 @@ class MazeEnv(MiniGridEnv):
     def step(self, action):
         obs, reward, done, info = MiniGridEnv.step(self, action)
 
-        cell = self.grid.get(*self.agent_pos)
-        if cell != None and cell.type == 'goal':
-            # Reched goal
-            if self._respawn_goal:
-                # Give reward and respawn goal
-                done = False
-                reward = 1.0
-                self.grid.set(*self.agent_pos, None)
-                self.place_obj(Goal())
-                obs = self.gen_obs()
-            elif self._no_goal:
-                # Don't give reward or stop on goal
-                done = False
-                reward = 0.0
+        if not (self.step_count >= self.max_steps):
+            cell = self.grid.get(*self.agent_pos)
+            if cell != None and cell.type == 'goal':
+                # Reched goal
+                if self._respawn_goal:
+                    # Give reward and respawn goal
+                    done = False
+                    reward = 1.0
+                    self.grid.set(*self.agent_pos, None)
+                    self.place_obj(Goal())
+                    obs = self.gen_obs()
+                elif self._no_goal:
+                    # Don't give reward or stop on goal
+                    done = False
+                    reward = 0.0
 
         return obs, reward, done, info
 
